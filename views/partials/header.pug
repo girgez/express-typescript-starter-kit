@@ -1,0 +1,25 @@
+.navbar.navbar-expand-lg.navbar-light.bg-light.mb-1
+    a.navbar-brand(href="/")
+        i.fas.fa-box-open
+        | Project name
+    button.navbar-toggler(type="button", data-toggle="collapse", data-target="#navbarSupportedContent", aria-controls="navbarSupportedContent", aria-expanded="false", aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+    
+    .collapse.navbar-collapse(id="navbarSupportedContent")
+        ul.navbar-nav.mr-auto
+            li.nav-item.active
+                a.nav-link(href="/") Home
+
+        ul.navbar-nav.ml-auto
+            if !user
+                li.nav-item
+                    a.nav-link(href="login") Login
+                li.nav-item
+                    a.nav-link(href="register") Register
+            else
+                li.nav-item.dropdown
+                    a.nav-link.dropdown-toggle#navbarDropdownUserMenuLink(href="#", role="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false")
+                        img.mr-2(src=user.gravatar(30), alt=user.email)
+                        span.mr-2= user.email
+                    .dropdown-menu(aria-labelledby="navbarDropdownUserMenuLink")
+                        a.dropdown-item(href="/logout") Logout
