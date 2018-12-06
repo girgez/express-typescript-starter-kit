@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt-nodejs";
 import crypto from "crypto";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "../util/secrets";
 
 export type UserModel = mongoose.Document & {
     email: string,
@@ -17,10 +19,15 @@ export type UserModel = mongoose.Document & {
     },
 
     comparePassword: comparePasswordFunction,
-    gravatar: (size: number) => string
+    gravatar: (size: number) => string,
+
+    generateJwtToken: generateJwtTokenFunction,
+    getPublicProfile: getPublicProfileFunction
 };
 
 type comparePasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
+type generateJwtTokenFunction = () => string;
+type getPublicProfileFunction = () => any;
 
 const userSchema = new mongoose.Schema({
     email: { type: String, unique: true },
@@ -59,7 +66,23 @@ const comparePassword: comparePasswordFunction = function (candidatePassword, cb
     });
 };
 
+const generateJwtToken: generateJwtTokenFunction = function () {
+    return jwt.sign({ id: this._id }, JWT_SECRET, { expiresIn: "30d" });
+};
+
+const getPublicProfile: getPublicProfileFunction = function () {
+    return {
+        email: this.email,
+        avatar: this.profile.picture || this.gravatar,
+        name: this.profile.name,
+        gender: this.profile.gender,
+        website: this.profile.website
+    };
+};
+
 userSchema.methods.comparePassword = comparePassword;
+userSchema.methods.generateJwtToken = generateJwtToken;
+userSchema.methods.getPublicProfile = getPublicProfile;
 
 /**
  * Helper method for getting user's gravatar.

@@ -1,23 +1,13 @@
 import passport from "passport";
-import passportLocal from "passport-local";
+import passportLocal, { IVerifyOptions } from "passport-local";
+import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import _ from "lodash";
 
-// import { User, UserType } from '../models/User';
-import { default as User } from "../models/User";
+import { default as User, UserModel } from "../models/User";
 import { Request, Response, NextFunction } from "express";
+import { JWT_SECRET } from "../util/secrets";
 
 const LocalStrategy = passportLocal.Strategy;
-
-passport.serializeUser<any, any>((user, done) => {
-    done(undefined, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
-});
-
 
 /**
  * Sign in using Email and Password.
@@ -38,12 +28,47 @@ passport.use(new LocalStrategy({ usernameField: "email" }, (email, password, don
     });
 }));
 
+
+/**
+ * Authenticate by jwt
+ */
+const opt = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("jwt"),
+    secretOrKey: JWT_SECRET,
+    ignoreExpiration: false
+};
+
+passport.use(new JwtStrategy(opt, function (payload, done) {
+    User.findOne({ _id: payload.id }, (err, user: any) => {
+        if (err) {
+            return done(err);
+        }
+        if (!user) {
+            return done(undefined, false, { message: `User not found.` });
+        }
+        if (user) {
+            return done(undefined, user);
+        }
+    });
+}));
+
 /**
  * Login Required middleware.
  */
 export let isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-    if (req.isAuthenticated()) {
+    passport.authenticate("jwt", (err: Error, user: UserModel, info: IVerifyOptions) => {
+        if (err) {
+            return res.status(500).errorJson({
+                message: err.message
+            });
+        }
+        if (!user) {
+            return res.status(401).errorJson({
+                message: info.message
+            });
+        }
+
+        req.user = user;
         return next();
-    }
-    res.redirect("/login");
+    })(req, res, next);
 };

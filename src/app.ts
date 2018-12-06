@@ -8,11 +8,13 @@ import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
 import { MONGODB_URI } from "./util/secrets";
+import { default as extendResponse }  from "./extensions/response";
 
 // Load environment variables from .env file, where API keys and passwords are configured
 dotenv.config();
 
 // Controllers (route handlers)
+import * as passportConfig from "./config/passport";
 import * as userController from "./controllers/user";
 
 // Create Express server
@@ -38,10 +40,13 @@ app.use(expressValidator());
 app.use(passport.initialize());
 app.use(lusca.xframe("SAMEORIGIN"));
 app.use(lusca.xssProtection(true));
+app.use(extendResponse);
 
 /**
  * Primary app routes.
  */
-
+app.post("/login", userController.postLogin);
+app.post("/register", userController.postRegister);
+app.get("/profile", passportConfig.isAuthenticated, userController.getProfile);
 
 export default app;
