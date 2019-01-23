@@ -2,16 +2,15 @@ import express from "express";
 import compression from "compression";  // compresses requests
 import bodyParser from "body-parser";
 import lusca from "lusca";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
-import { MONGODB_URI } from "./util/secrets";
 import { default as extendResponse }  from "./extensions/response";
 
-// Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config();
+// Load secret and logger
+import { MONGODB_URI, APP_PORT } from "./util/secrets";
+import logger from "./util/logger";
 
 // Controllers (route handlers)
 import * as passportConfig from "./config/passport";
@@ -27,12 +26,12 @@ const mongoUrl = MONGODB_URI;
 mongoose.connect(mongoUrl, { useCreateIndex: true, useNewUrlParser: true }).then(
     () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
 ).catch((err: any) => {
-    console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
+    logger.error("MongoDB connection error. Please make sure MongoDB is running. " + err);
     // process.exit();
 });
 
 // Express configuration
-app.set("port", process.env.PORT || 3000);
+app.set("port", APP_PORT);
 app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

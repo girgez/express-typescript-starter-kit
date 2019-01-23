@@ -5,7 +5,9 @@
   "author": "Dat Le Thanh",
   "license": "ISC",
   "scripts": {
+    "prod": "npm start --prod",
     "start": "npm run serve",
+    "start-ts": "ts-node src/server.ts",
     "build": "npm run build-ts && npm run tslint && npm run copy-static-assets",
     "serve": "node dist/server.js",
     "watch-node": "nodemon dist/server.js",
