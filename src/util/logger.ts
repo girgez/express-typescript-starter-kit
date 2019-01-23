@@ -1,18 +1,20 @@
-import winston from "winston";
-// import { Logger } from "winston";
-import { ENVIRONMENT } from "./secrets";
+import winston, { format } from "winston";
+
+const myFormat = format.printf(info => {
+    return `${info.timestamp} ${info.level}: ${info.message}`;
+});
 
 const logger = winston.createLogger({
+    level: "debug",
     transports: [
-        new (winston.transports.Console)({ level: process.env.NODE_ENV === "production" ? "error" : "debug" }),
-        new (winston.transports.File)({ filename: "debug.log", level: "debug"})
+        new winston.transports.File({ filename: "error.log", level: "error" }),
+        new winston.transports.File({ filename: "combined.log"})
     ],
-    format: winston.format.combine(winston.format.splat(), winston.format.simple())
+    format: winston.format.combine(winston.format.timestamp(), myFormat)
 });
 
 if (process.env.NODE_ENV !== "production") {
-    logger.debug("Logging initialized at debug level");
+    logger.add(new winston.transports.Console());
 }
 
 export default logger;
-

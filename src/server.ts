@@ -10,9 +10,10 @@ app.use(errorHandler());
  */
 export const server = app.listen(app.get("port"), () => {
     console.log(
-        "  App is running at http://localhost:%d in %s mode",
+        "  App is running at http://localhost:%d in %s mode at %s",
         app.get("port"),
-        app.get("env")
+        app.get("env"),
+        new Date()
     );
     console.log("  Press CTRL-C to stop\n");
 });

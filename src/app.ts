@@ -3,7 +3,6 @@ import compression from "compression";  // compresses requests
 import session from "express-session";
 import bodyParser from "body-parser";
 import lusca from "lusca";
-import dotenv from "dotenv";
 import mongo from "connect-mongo";
 import flash from "express-flash";
 import path from "path";
@@ -11,12 +10,12 @@ import mongoose from "mongoose";
 import passport from "passport";
 import expressValidator from "express-validator";
 import bluebird from "bluebird";
-import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
+
+// Load secret and logger
+import { MONGODB_URI, APP_PORT, SESSION_SECRET } from "./util/secrets";
+import logger from "./util/logger";
 
 const MongoStore = mongo(session);
-
-// Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config();
 
 // Controllers (route handlers)
 import * as homeController from "./controllers/home";
@@ -32,12 +31,12 @@ const mongoUrl = MONGODB_URI;
 mongoose.connect(mongoUrl, { useCreateIndex: true, useNewUrlParser: true }).then(
     () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */ },
 ).catch((err: any) => {
-    console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
+    logger.error("MongoDB connection error. Please make sure MongoDB is running. " + err);
     // process.exit();
 });
 
 // Express configuration
-app.set("port", process.env.PORT || 3000);
+app.set("port", APP_PORT);
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "pug");
 app.use(compression());
